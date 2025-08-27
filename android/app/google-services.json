@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "335121324798",
+    "project_id": "fitnesstracker-bfad2",
+    "storage_bucket": "fitnesstracker-bfad2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:335121324798:android:5ad5fa4e7c585bacca63af",
+        "android_client_info": {
+          "package_name": "com.example.task4"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcAd8iniklubbh5mtEE-SYdbIf68P5-YQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
