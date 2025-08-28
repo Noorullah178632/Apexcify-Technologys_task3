@@ -11,31 +11,54 @@ class Logacitvityscreen extends StatefulWidget {
 }
 
 class _LogacitvityscreenState extends State<Logacitvityscreen> {
-  //make a form key for the form
-  final formKey = GlobalKey<FormState>();
   //add textediting controller to controll the textfield
   final exerciseController = TextEditingController();
   final caloriesController = TextEditingController();
-  final durationController = TextEditingController();
-  void clear() {
-    exerciseController.clear();
-    caloriesController.clear();
-    durationController.clear();
-    setState(() {});
-  }
+  TimeOfDay? _selectedTime; // store workout time
 
   //make a method for database to store data in the data base
   Future<void> saveActivity() async {
+    if (exerciseController.text.isEmpty ||
+        caloriesController.text.isEmpty ||
+        _selectedTime == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Please fill in all fields")));
+      return;
+    }
     String id = DateTime.now().millisecondsSinceEpoch.toString();
 
     Map<String, dynamic> activityData = {
-      'name': exerciseController.text,
+      'exercise': exerciseController.text,
       'calories': int.parse(caloriesController.text),
-      'duration': int.parse(durationController.text),
-      'timestamp': FieldValue.serverTimestamp(),
+      'time': _selectedTime!.format(context), // save time
+      'createdAt': FieldValue.serverTimestamp(),
     };
 
-    await Database.addActivity(activityData, id);
+    try {
+      await Database.addActivity(activityData, id);
+      Get.snackbar("Saved", "Saved the Activity in the backened");
+      exerciseController.clear();
+      caloriesController.clear();
+      setState(() {
+        _selectedTime = null; // reset
+      });
+    } catch (e) {
+      Get.snackbar("Error", "Error saving activity: $e");
+    }
+  }
+
+  //make a method for time picker
+  Future<void> pickTime() async {
+    TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
   }
 
   @override
@@ -43,7 +66,7 @@ class _LogacitvityscreenState extends State<Logacitvityscreen> {
     // TODO: implement dispose
     exerciseController.dispose();
     caloriesController.dispose();
-    durationController.dispose();
+
     super.dispose();
   }
 
@@ -61,76 +84,54 @@ class _LogacitvityscreenState extends State<Logacitvityscreen> {
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              TextFormField(
-                controller: exerciseController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter exercise name';
-                  }
-                  return null;
-                },
-                decoration: InputDecoration(
-                  labelText: 'Exercise Name',
-                  border: OutlineInputBorder(),
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            TextFormField(
+              controller: exerciseController,
+
+              decoration: InputDecoration(
+                labelText: 'Exercise Name',
+                border: OutlineInputBorder(),
               ),
-              SizedBox(height: 20),
-              TextFormField(
-                controller: caloriesController,
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter calories';
-                  }
-                  return null;
-                },
-                decoration: InputDecoration(
-                  labelText: 'Calories Burned',
-                  border: OutlineInputBorder(),
-                ),
+            ),
+            SizedBox(height: 20),
+            TextFormField(
+              controller: caloriesController,
+              keyboardType: TextInputType.number,
+
+              decoration: InputDecoration(
+                labelText: 'Calories Burned',
+                border: OutlineInputBorder(),
               ),
-              SizedBox(height: 20),
-              TextFormField(
-                controller: durationController,
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter time';
-                  }
-                  return null;
-                },
-                decoration: InputDecoration(
-                  labelText: 'Duration (minutes)',
-                  border: OutlineInputBorder(),
+            ),
+            SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedTime == null
+                        ? "No Time Selected"
+                        : "Workout Time: ${_selectedTime!.format(context)}",
+                  ),
                 ),
+                TextButton(onPressed: pickTime, child: Text("Picked Time")),
+              ],
+            ),
+            SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () async {
+                await saveActivity();
+              },
+              child: Text('Save Activity', style: TextStyle(fontSize: 18)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                minimumSize: Size(double.infinity, 50),
               ),
-              SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () async {
-                  if (formKey.currentState!.validate()) {
-                    await saveActivity();
-                    Get.snackbar(
-                      "Saved Data",
-                      "Your data is saved in the backened",
-                    );
-                    clear();
-                  }
-                },
-                child: Text('Save Activity', style: TextStyle(fontSize: 18)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 50),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
