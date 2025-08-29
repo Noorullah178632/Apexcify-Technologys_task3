@@ -14,13 +14,13 @@ class _LogacitvityscreenState extends State<Logacitvityscreen> {
   //add textediting controller to controll the textfield
   final exerciseController = TextEditingController();
   final caloriesController = TextEditingController();
-  TimeOfDay? _selectedTime; // store workout time
+  final timeController = TextEditingController();
 
   //make a method for database to store data in the data base
   Future<void> saveActivity() async {
     if (exerciseController.text.isEmpty ||
         caloriesController.text.isEmpty ||
-        _selectedTime == null) {
+        timeController.text.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Please fill in all fields")));
@@ -31,7 +31,7 @@ class _LogacitvityscreenState extends State<Logacitvityscreen> {
     Map<String, dynamic> activityData = {
       'exercise': exerciseController.text,
       'calories': int.parse(caloriesController.text),
-      'time': _selectedTime!.format(context), // save time
+      'time': int.parse(timeController.text), // save time
       'createdAt': FieldValue.serverTimestamp(),
     };
 
@@ -40,24 +40,9 @@ class _LogacitvityscreenState extends State<Logacitvityscreen> {
       Get.snackbar("Saved", "Saved the Activity in the backened");
       exerciseController.clear();
       caloriesController.clear();
-      setState(() {
-        _selectedTime = null; // reset
-      });
+      timeController.clear();
     } catch (e) {
       Get.snackbar("Error", "Error saving activity: $e");
-    }
-  }
-
-  //make a method for time picker
-  Future<void> pickTime() async {
-    TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedTime = picked;
-      });
     }
   }
 
@@ -107,18 +92,17 @@ class _LogacitvityscreenState extends State<Logacitvityscreen> {
               ),
             ),
             SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _selectedTime == null
-                        ? "No Time Selected"
-                        : "Workout Time: ${_selectedTime!.format(context)}",
-                  ),
-                ),
-                TextButton(onPressed: pickTime, child: Text("Picked Time")),
-              ],
+            TextFormField(
+              controller: timeController,
+              keyboardType: TextInputType.number,
+
+              decoration: InputDecoration(
+                labelText: 'Time',
+                border: OutlineInputBorder(),
+              ),
             ),
+            SizedBox(height: 20),
+
             SizedBox(height: 30),
             ElevatedButton(
               onPressed: () async {
