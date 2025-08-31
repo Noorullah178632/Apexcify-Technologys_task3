@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class Dashboardscreen extends StatefulWidget {
@@ -153,15 +154,44 @@ class _DashboardscreenState extends State<Dashboardscreen> {
                 ),
                 SizedBox(height: 16),
                 Container(
-                  height: 150,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Chart Will Be Here',
-                      style: TextStyle(color: Colors.grey),
+                  height: 300,
+                  child: BarChart(
+                    BarChartData(
+                      barGroups: [
+                        BarChartGroupData(
+                          x: 0,
+                          barRods: [BarChartRodData(toY: 100)],
+                        ),
+                        BarChartGroupData(
+                          x: 1,
+                          barRods: [BarChartRodData(toY: 43)],
+                        ),
+                        BarChartGroupData(
+                          x: 2,
+                          barRods: [BarChartRodData(toY: 22)],
+                        ),
+                        BarChartGroupData(
+                          x: 3,
+                          barRods: [BarChartRodData(toY: 55)],
+                        ),
+                        BarChartGroupData(
+                          x: 4,
+                          barRods: [BarChartRodData(toY: 66)],
+                        ),
+                        BarChartGroupData(
+                          x: 5,
+                          barRods: [BarChartRodData(toY: 77)],
+                        ),
+                        BarChartGroupData(
+                          x: 6,
+                          barRods: [BarChartRodData(toY: 89)],
+                        ),
+                      ],
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: true),
+                        ),
+                      ),
                     ),
                   ),
                 ),
