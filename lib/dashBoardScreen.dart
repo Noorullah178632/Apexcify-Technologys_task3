@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,21 @@ class Dashboardscreen extends StatefulWidget {
 }
 
 class _DashboardscreenState extends State<Dashboardscreen> {
+  //we will make a function to get the data from the firebase and show it in the chart bar
+  List<double> getWeeklyCalories(List<QueryDocumentSnapshot> allDocs) {
+    List<double> weeklyData = [0, 0, 0, 0, 0, 0, 0];
+    DateTime today = DateTime.now();
+    for (var doc in allDocs) {
+      Timestamp timestamp = doc['createdAt'];
+      DateTime dailyActivity = timestamp.toDate();
+      int dayDiff = today.difference(dailyActivity).inDays;
+      if (dayDiff >= 0 && dayDiff < 7) {
+        weeklyData[dayDiff] += (doc["calories"] as int).toDouble();
+      }
+    }
+    return weeklyData;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,6 +79,8 @@ class _DashboardscreenState extends State<Dashboardscreen> {
             (sum, doc) => sum + (doc["time"] as int),
           );
           int totalActivites = todayActivities.length;
+          //for graphs
+          List<double> weeklyCalaries = getWeeklyCalories(snapshot.data!.docs);
           return Padding(
             padding: EdgeInsets.all(16.0),
             child: Column(
@@ -153,43 +172,32 @@ class _DashboardscreenState extends State<Dashboardscreen> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 16),
+
                 Container(
                   height: 300,
                   child: BarChart(
                     BarChartData(
                       barGroups: [
-                        BarChartGroupData(
-                          x: 0,
-                          barRods: [BarChartRodData(toY: 100)],
-                        ),
-                        BarChartGroupData(
-                          x: 1,
-                          barRods: [BarChartRodData(toY: 43)],
-                        ),
-                        BarChartGroupData(
-                          x: 2,
-                          barRods: [BarChartRodData(toY: 22)],
-                        ),
-                        BarChartGroupData(
-                          x: 3,
-                          barRods: [BarChartRodData(toY: 55)],
-                        ),
-                        BarChartGroupData(
-                          x: 4,
-                          barRods: [BarChartRodData(toY: 66)],
-                        ),
-                        BarChartGroupData(
-                          x: 5,
-                          barRods: [BarChartRodData(toY: 77)],
-                        ),
-                        BarChartGroupData(
-                          x: 6,
-                          barRods: [BarChartRodData(toY: 89)],
-                        ),
+                        for (int i = 0; i < 7; i++)
+                          BarChartGroupData(
+                            x: i,
+                            barRods: [
+                              BarChartRodData(
+                                toY: weeklyCalaries[i],
+                                color: Colors.blue,
+                              ),
+                            ],
+                          ),
                       ],
                       titlesData: FlTitlesData(
                         bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: true),
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, day) {
+                              const days = ['1', '2', '3', '4', '5', '6', '7'];
+                              return Text(days[value.toInt()]);
+                            },
+                          ),
                         ),
                       ),
                     ),
